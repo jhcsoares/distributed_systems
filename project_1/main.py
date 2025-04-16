@@ -71,8 +71,10 @@ class Main:
                 reservation_id = str(input("Reservation id: "))
 
                 if self.__payment.make_payment(reservation_id=reservation_id):
-                    while not self.__reservation.get_payment_status_by_reservation_id(
-                        reservation_id=reservation_id
+                    while (
+                        not self.__reservation.get_reservation_status_by_reservation_id(
+                            reservation_id=reservation_id
+                        )
                     ):
                         # busy waiting
                         pass
@@ -81,8 +83,10 @@ class Main:
                 reservation_id = str(input("Reservation id: "))
 
                 if self.__payment.refuse_payment(reservation_id=reservation_id):
-                    while not self.__reservation.get_payment_status_by_reservation_id(
-                        reservation_id=reservation_id
+                    while (
+                        not self.__reservation.get_reservation_status_by_reservation_id(
+                            reservation_id=reservation_id
+                        )
                     ):
                         # busy waiting
                         pass

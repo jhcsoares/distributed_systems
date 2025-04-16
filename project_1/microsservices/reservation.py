@@ -3,6 +3,7 @@ from broker.subscriber import Subscriber
 from cryptography.cryptography import Cryptography
 from json import dumps, load, loads
 from models.pending_reservation import PendingReservation, ReservationData
+from models.reservation_status import ReservationStatusData
 from pathlib import Path
 from pika.adapters.blocking_connection import BlockingChannel
 from pika.spec import Basic, BasicProperties
@@ -24,10 +25,8 @@ class Reservation:
             queue_name="created_reservations",
         )
 
-        # {reservation_id: status}
-        # True: payment finished
-        # False: payment in process
-        self.__payment_status_dict: Dict[str, bool] = {}
+        # {reservation_id: ReservationStatus}
+        self.__reservation_status_dict: Dict[str, ReservationStatusData] = {}
 
         self.__approved_payments_thread = Thread(
             target=self.__approved_payments_function,
@@ -70,6 +69,10 @@ class Reservation:
 
                 print(f"Reservation {reservation_id} has been paid successfully!")
 
+                self.__reservation_status_dict[
+                    reservation_id
+                ].has_finished_payment_processing = True
+
             ch.basic_ack(delivery_tag=method.delivery_tag)
 
         subscriber = Subscriber(
@@ -101,9 +104,15 @@ class Reservation:
 
             ticket_data = loads(body)
 
-            print(f"Here is your ticket: {ticket_data["ticket_id"]}")
+            ticket_id = ticket_data["ticket_id"]
 
-            self.__payment_status_dict[ticket_data["reservation_id"]] = True
+            reservation_id = ticket_data["reservation_id"]
+
+            print(f"Here is your ticket: {ticket_id}")
+
+            self.__reservation_status_dict[
+                reservation_id
+            ].has_finished_ticket_processing = True
 
             ch.basic_ack(delivery_tag=method.delivery_tag)
 
@@ -132,7 +141,12 @@ class Reservation:
             else:
                 reservation_id = body.decode()
 
-                self.__payment_status_dict[reservation_id] = True
+                self.__reservation_status_dict[
+                    reservation_id
+                ].has_finished_payment_processing = True
+                self.__reservation_status_dict[
+                    reservation_id
+                ].has_finished_ticket_processing = True
 
                 print(f"Reservation {reservation_id} has not been paid successfully!")
 
@@ -184,21 +198,31 @@ class Reservation:
 
                 print(f"Created reservation id: {reservation_id}")
 
-                self.__payment_status_dict.update(
+                self.__reservation_status_dict.update(
                     {
-                        reservation_id: False,
-                    },
+                        reservation_id: ReservationStatusData(
+                            has_finished_ticket_processing=False,
+                            has_finished_payment_processing=False,
+                        )
+                    }
                 )
 
                 return
 
         print("No itineraries found!")
 
-    def get_payment_status_by_reservation_id(
+    def get_reservation_status_by_reservation_id(
         self,
         reservation_id: str,
     ) -> bool:
-        return self.__payment_status_dict.get(reservation_id)
+        return (
+            self.__reservation_status_dict.get(
+                reservation_id
+            ).has_finished_ticket_processing
+            and self.__reservation_status_dict.get(
+                reservation_id
+            ).has_finished_payment_processing
+        )
 
     def list_itineraries(
         self,
