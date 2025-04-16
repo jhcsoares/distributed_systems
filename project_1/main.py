@@ -38,7 +38,7 @@ class Main:
             print("Option 2: Make a reservation")
             print("Option 3: Make the payment")
             print("Option 4: Refuse the payment")
-            print("Option 5: Create promotion")
+            print("Option 5: Subscribe in a promotion")
             print("Option 6: Exit")
 
             option = str(input("Type your option: "))
@@ -94,7 +94,7 @@ class Main:
             elif option == "5":
                 destiny = str(input("Type your destiny: "))
 
-                self.__marketing.create_promotion(
+                self.__marketing.promotion_subscribe(
                     destiny=destiny,
                 )
 
