@@ -72,7 +72,7 @@ class Payment:
 
             self.__cryptography.sign_message(
                 message=message.encode(),
-                private_key_name="approved_payments",
+                private_key_name="payments",
             )
 
             self.__publisher.publish(
@@ -99,7 +99,7 @@ class Payment:
 
             self.__cryptography.sign_message(
                 message=message.encode(),
-                private_key_name="refused_payments",
+                private_key_name="payments",
             )
 
             self.__publisher.publish(

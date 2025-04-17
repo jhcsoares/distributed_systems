@@ -23,13 +23,7 @@ class Main:
         self,
     ) -> None:
         self.__cryptography.generate_keys(
-            key_name="approved_payments",
-        )
-        self.__cryptography.generate_keys(
-            key_name="refused_payments",
-        )
-        self.__cryptography.generate_keys(
-            key_name="created_reservations",
+            key_name="payments",
         )
 
         is_running = True

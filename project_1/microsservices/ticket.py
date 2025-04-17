@@ -38,7 +38,7 @@ class Ticket:
         ) -> None:
             if not self.__cryptography.check_signature(
                 message=body,
-                public_key_name="approved_payments",
+                public_key_name="payments",
             ):
                 print("Signature was not correctly checked!")
 
