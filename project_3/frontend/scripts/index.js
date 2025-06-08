@@ -1,5 +1,10 @@
 function main() {
-  client_id = crypto.randomUUID();
+  if (!sessionStorage.getItem("client_id")) {
+    client_id = crypto.randomUUID();
+    sessionStorage.setItem("client_id", client_id);
+  } else {
+    client_id = sessionStorage.getItem("client_id");
+  }
 
   window.document
     .querySelector("#view_itineraries_button")
@@ -16,9 +21,7 @@ function main() {
   window.document
     .querySelector("#promotions_subscribe_button")
     .addEventListener("click", () => {
-      const source = new EventSource(
-        "http://127.0.0.1:5000/promotions_channel"
-      );
+      const source = new EventSource("http://127.0.0.1:5000/stream");
 
       fetch("http://127.0.0.1:5000/promotions_subscribe", {
         method: "POST",

@@ -1,6 +1,6 @@
 from broker.publisher import Publisher
 from broker.subscriber import Subscriber
-from json import dumps
+from json import dumps, loads
 from pika.adapters.blocking_connection import BlockingChannel
 from pika.spec import Basic, BasicProperties
 from threading import Thread
@@ -39,7 +39,7 @@ class Ticket:
                 routing_key="generated_tickets",
                 message=dumps(
                     {
-                        "reservation_id": body.decode(),
+                        "reservation_id": loads(body.decode())["reservation_id"],
                         "ticket_id": ticket_id,
                     }
                 ),

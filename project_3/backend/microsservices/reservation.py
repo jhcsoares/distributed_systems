@@ -1,13 +1,13 @@
 from broker.publisher import Publisher
 from broker.subscriber import Subscriber
-from json import dumps, load, loads
+from json import dump, dumps, load, loads
 from models.pending_reservation import PendingReservation, ReservationData
 from models.reservation_status import ReservationStatusData
 from pathlib import Path
 from pika.adapters.blocking_connection import BlockingChannel
 from pika.spec import Basic, BasicProperties
 from threading import Thread
-from typing import Dict
+from typing import Any, Dict, List
 from uuid import uuid4
 
 
@@ -15,6 +15,8 @@ class Reservation:
     def __init__(
         self,
     ) -> None:
+        self.__ticket_id = ""
+
         self.__publisher = Publisher(
             host="localhost",
         )
@@ -24,6 +26,8 @@ class Reservation:
 
         # {reservation_id: ReservationStatus}
         self.__reservation_status_dict: Dict[str, ReservationStatusData] = {}
+
+        self.__created_reservations_dict: Dict[str, Any] = {}
 
         self.__approved_payments_thread = Thread(
             target=self.__approved_payments_function,
@@ -55,9 +59,35 @@ class Reservation:
             properties: BasicProperties,
             body: bytes,
         ) -> None:
-            reservation_id = body.decode()
+            response = loads(body.decode())
 
-            print(f"Reservation {reservation_id} has been paid successfully!")
+            reservation_id = response["reservation_id"]
+            client_id = response["client_id"]
+            destiny = response["destiny"]
+            boarding_port = response["boarding_port"]
+            boarding_date = response["boarding_date"]
+
+            if not self.__created_reservations_dict.get(client_id):
+                self.__created_reservations_dict.update(
+                    {
+                        client_id: [],
+                    },
+                )
+
+            while not self.__ticket_id:
+                pass
+
+            reservations_list: List = self.__created_reservations_dict.get(client_id)
+            reservations_list.append(
+                {
+                    "destiny": destiny,
+                    "boarding_date": boarding_date,
+                    "boarding_port": boarding_port,
+                    "ticket_id": self.__ticket_id,
+                },
+            )
+
+            self.__ticket_id = ""
 
             self.__reservation_status_dict[
                 reservation_id
@@ -94,11 +124,9 @@ class Reservation:
 
             ticket_data = loads(body)
 
-            ticket_id = ticket_data["ticket_id"]
+            self.__ticket_id = ticket_data["ticket_id"]
 
             reservation_id = ticket_data["reservation_id"]
-
-            print(f"Here is your ticket: {ticket_id}")
 
             self.__reservation_status_dict[
                 reservation_id
@@ -144,13 +172,30 @@ class Reservation:
             callback=refused_payments_callback,
         )
 
+    def cancel_reservation(
+        self,
+        client_id: str,
+        ticket_id: str,
+    ) -> None:
+        reservations_list: List = self.__created_reservations_dict.get(client_id)
+
+        target = None
+
+        for reservation in reservations_list:
+            if reservation["ticket_id"] == ticket_id:
+                target = reservation
+                print(target)
+                break
+
+        reservations_list.remove(target)
+
     def create_reservation(
         self,
         ship_name: str,
         boarding_date: str,
         number_of_passengers: int,
         number_of_cabins: int,
-    ) -> None:
+    ) -> str:
         itineraries_file = (
             Path(__file__).resolve().parent.parent / "data" / "itineraries.json"
         )
@@ -163,6 +208,11 @@ class Reservation:
                 ship_name == itinerary["ship_name"]
                 and boarding_date == itinerary["boarding_date"]
             ):
+                itinerary["number_of_available_cabins"] -= number_of_cabins
+
+                with open(itineraries_file, "w") as f:
+                    dump(itineraries, f, indent=4)
+
                 reservation_id = str(uuid4())
 
                 self.__publisher.publish(
@@ -179,8 +229,6 @@ class Reservation:
                     ),
                 )
 
-                print(f"Created reservation id: {reservation_id}")
-
                 self.__reservation_status_dict.update(
                     {
                         reservation_id: ReservationStatusData(
@@ -190,7 +238,7 @@ class Reservation:
                     }
                 )
 
-                return
+                return reservation_id
 
         print("No itineraries found!")
 
@@ -207,12 +255,18 @@ class Reservation:
             ).has_finished_payment_processing
         )
 
-    def list_itineraries(
+    def get_reservations_by_client_id(
+        self,
+        client_id: str,
+    ) -> List:
+        return self.__created_reservations_dict.get(client_id)
+
+    def get_itineraries(
         self,
         destiny: str,
         boarding_date: str,
         boarding_port: str,
-    ) -> None:
+    ) -> List[Dict]:
         itineraries_file = (
             Path(__file__).resolve().parent.parent / "data" / "itineraries.json"
         )
@@ -223,10 +277,16 @@ class Reservation:
         ) as f:
             itineraries = load(f)
 
+        result = []
+
         for itinerary in itineraries:
             if (
                 destiny == itinerary["destiny"]
                 and boarding_date == itinerary["boarding_date"]
                 and boarding_port == itinerary["boarding_port"]
             ):
-                print(itinerary)
+                result.append(
+                    itinerary,
+                )
+
+        return result

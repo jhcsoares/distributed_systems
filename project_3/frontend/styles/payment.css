@@ -25,26 +25,23 @@ label {
   font-weight: bold;
 }
 
-input[type="text"] {
-  padding: 10px;
-  font-size: 16px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-  width: 100%;
+.button-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
-.payment-link {
-  text-align: center;
-  display: inline-block;
+.button-container button {
+  padding: 12px 24px;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
   background-color: #3498db;
   color: white;
-  padding: 12px 20px;
-  border-radius: 8px;
-  text-decoration: none;
-  font-weight: bold;
+  cursor: pointer;
   transition: background-color 0.3s;
 }
 
-.payment-link:hover {
+.button-container button:hover {
   background-color: #2980b9;
 }

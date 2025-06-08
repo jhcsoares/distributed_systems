@@ -5,28 +5,40 @@
         "boarding_port": "Santos",
         "destination_port": "Cancun Port 1",
         "ship_name": "Titanic",
-        "visiting_places": ["Feira", "Museu"],
+        "visiting_places": [
+            "Feira",
+            "Museu"
+        ],
         "number_of_nights": 4,
-        "price_per_person": 320
+        "price_per_person": 320,
+        "number_of_available_cabins": 470
     },
     {
         "destiny": "Cancun",
         "boarding_date": "05/01/2025",
-        "boarding_port": "Paranaguá",
+        "boarding_port": "Paranagua",
         "destination_port": "Cancun Port 2",
         "ship_name": "Iceberg",
-        "visiting_places": ["Feira", "Museu", "Praia"],
+        "visiting_places": [
+            "Feira",
+            "Museu",
+            "Praia"
+        ],
         "number_of_nights": 5,
-        "price_per_person": 350
+        "price_per_person": 350,
+        "number_of_available_cabins": 60
     },
     {
         "destiny": "Madrid",
         "boarding_date": "06/01/2025",
-        "boarding_port": "Paranaguá",
+        "boarding_port": "Paranagua",
         "destination_port": "Madrid Port",
         "ship_name": "Paella",
-        "visiting_places": ["Restaurante"],
+        "visiting_places": [
+            "Restaurante"
+        ],
         "number_of_nights": 3,
-        "price_per_person": 400
+        "price_per_person": 400,
+        "number_of_available_cabins": 70
     }
 ]

@@ -64,3 +64,22 @@ body {
   border-radius: 4px;
   font-size: 14px;
 }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+th,
+td {
+  padding: 12px 15px;
+  border: 1px solid #ccc;
+  text-align: left;
+}
+
+th {
+  background-color: #3498db;
+  color: white;
+}
