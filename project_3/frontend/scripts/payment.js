@@ -8,7 +8,7 @@ function main() {
   payment_link_button.addEventListener("click", (event) => {
     event.preventDefault();
 
-    fetch("http://127.0.0.1:5001/make_payment", {
+    fetch("http://127.0.0.1:5000/make_payment", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
